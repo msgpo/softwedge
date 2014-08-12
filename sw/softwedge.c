@@ -37,23 +37,32 @@ static int serialPort;
 static Display *dpy;
 
 static void xtest_key_press(unsigned char letter) {
+
+        KeySym sym;
+        KeyCode keycode;
+        
 	unsigned int shiftcode = XKeysymToKeycode(dpy, XStringToKeysym("Shift_L"));
 	int upper = 0;
 	int skip_lookup = 0;
-	char s[2];
-	s[0] = letter;
-	s[1] = 0;
-	KeySym sym = XStringToKeysym(s);
-	KeyCode keycode;
 
-
+        if (letter == 0x02) {
+            sym = XK_F7;
+            skip_lookup = 1;
+        } else if (letter == 0x03) {
+            sym = XK_KP_Enter;
+            skip_lookup = 1;
+        } else {
+            char s[2];
+            s[0] = letter;
+            s[1] = 0;
+            sym = XStringToKeysym(s);
+        }
 
 	if (sym == 0) {
 		sym = letter;
 	}
 
-
-	if (sym == '\n') {
+        if (sym == '\n') {
 		sym = XK_Return;
 		skip_lookup = 1;
 
@@ -157,9 +166,9 @@ void sw_read_loop() {
 	readbuf[1] = 0;
 
 	while(read(serialPort, readbuf, 1) > 0) {
-		if (readbuf[0] == 0x02 || readbuf[0] == 0x03) 
-			continue;
-		press_keys(readbuf);
+		//if (readbuf[0] == 0x02 || readbuf[0] == 0x03)
+		//	continue;
+                press_keys(readbuf);
 	}
 	// We're done now
 	close(serialPort);
