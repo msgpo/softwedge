@@ -29,6 +29,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <sys/ioctl.h>
 
 
 #include "softwedge.h"
@@ -124,12 +126,17 @@ static void press_keys(char* string) {
 
 int sw_open_serial(const char *port) {
 	serialPort = open(port, O_RDONLY);
+        atexit(sw_fini);
+        signal(SIGABRT, sw_fini);
+        signal(SIGINT, sw_fini);
+        signal(SIGKILL, sw_fini);
+        signal(SIGTERM, sw_fini);
 	if (serialPort < 0) {
 		fprintf(stderr, "Can't open serial port: %s\n", port);
 		exit(-1);
 	}
-
-	return 0;
+        ioctl(serialPort, TIOCEXCL);
+        return 0;
 }
 
 void sw_init() {
@@ -157,6 +164,13 @@ void sw_init() {
 		exit(1);
 	}
 
+}
+
+void sw_fini() {
+    if (serialPort > 0) {
+        ioctl(serialPort, TIOCNXCL);
+    }
+    exit(0);
 }
 
 
