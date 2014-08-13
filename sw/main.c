@@ -30,13 +30,13 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-
 #include "softwedge.h"
+
+int isDaemon = 1;
 
 int main(int argc, char**argv)
 {
   int c;
-  int dontDaemon = 0;
   char *sport = NULL;
 
   while ((c = getopt (argc, argv, "fvc:")) != -1)
@@ -44,7 +44,7 @@ int main(int argc, char**argv)
       {
       case 'f':
 	fprintf(stderr, "softwedge not daemonizing...\n");
-	dontDaemon = 1;
+	isDaemon = 0;
 	break;
       case 'v':
 	fprintf(stderr, "softwedge v %s: The serial softwedge X11 helper. ", SOFTWEDGE_VERSION);
@@ -74,11 +74,9 @@ int main(int argc, char**argv)
 
   sw_open_serial(sport);
 
-
-
-  if (!dontDaemon) {
-    if(fork()) {
-      return 0;
+  if (is_daemon()) {
+    if (fork()) {
+        return 0;
     }
     
     close(0);
@@ -90,4 +88,8 @@ int main(int argc, char**argv)
   sw_read_loop();
 
   return 0;
+}
+
+int is_daemon() {
+    return isDaemon;
 }

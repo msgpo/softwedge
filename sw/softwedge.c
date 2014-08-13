@@ -167,7 +167,7 @@ void sw_init() {
 }
 
 void sw_fini() {
-    if (serialPort > 0) {
+    if (serialPort > 0 && !is_daemon()) {
         ioctl(serialPort, TIOCNXCL);
     }
     exit(0);
